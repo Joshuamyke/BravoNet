@@ -27,7 +27,9 @@ exports.register = async (req, res) => {
 		});
 		await user.save();
 		res.status(201).json({ message: "Account Created successfully" });
-	} catch (error) {}
+	} catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
 };
 
 // Login User
