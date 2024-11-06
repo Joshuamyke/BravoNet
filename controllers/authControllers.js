@@ -35,21 +35,29 @@ exports.register = async (req, res) => {
 // Login User
 exports.login = async (req, res) => {
 	const { email, password } = req.body;
-	const user = await User.findOne({ email });
-	if (!user || !(await bcrypt.compare(password, user.password))) {
-		return res.status(401).json({ message: "Invalid credentials" });
+	
+	try{
+		const user = await User.findOne({ email });
+		if (!user || !(await bcrypt.compare(password, user.password))) {
+			return res.status(401).json({ message: "Invalid credentials" });
+		}
+		const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+			expiresIn: "1h",
+		});
+		res.json({ token });
+	}catch (error){
+
+		return res.status(500).json({ message: error.message });
 	}
-	const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-		expiresIn: "1h",
-	});
-	res.json({ token });
 };
 
 // Request Password Reset
 exports.requestPasswordReset = async (req, res) => {
 	const { email } = req.body;
-	const user = await User.findOne({ email });
-	if (!user) return res.status(404).json({ message: "User  not found" });
+	
+	try {
+		const user = await User.findOne({ email });
+		if (!user) return res.status(404).json({ message: "User  not found" });
 
 	// Generate OTP
 	const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -72,15 +80,20 @@ exports.requestPasswordReset = async (req, res) => {
 		text: `Your OTP is ${otp}`,
 	});
 
-	res.json({ message: "OTP sent to email" });
+	res.json({ message: "OTP sent to email" });}catch (error) {
+		return res.status(500).json({ message: error.message });
+	}
 };
 
 // Reset Password
 exports.resetPassword = async (req, res) => {
 	const { email, otp, newPassword } = req.body;
-	const user = await User.findOne({ email });
+	
 
-	if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
+	try{
+		const user = await User.findOne({ email });
+		if
+		 (!user || user.otp !== otp || user.otpExpires < Date.now()) {
 		return res.status(400).json({ message: "Invalid or expired OTP" });
 	}
 
@@ -88,5 +101,7 @@ exports.resetPassword = async (req, res) => {
 	user.password = null; // Clear OTP after use
 	user.otpExpires = null; // Clear OTP expiration
 	await user.save();
-	res.json({ message: "Password reset successfully" });
+	res.json({ message: "Password reset successfully" });}catch (error) {
+		return res.status(500).json({ message: error.message });
+	}
 };
