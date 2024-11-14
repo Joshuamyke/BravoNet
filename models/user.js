@@ -28,15 +28,29 @@ const userSchema = new mongoose.Schema({
             max: new Date().getFullYear(),
         },
     },
+
     password: {
         type: String,
         required: true,
     },
+    username: {
+        type: String
+    },
+    bio: { type: String },
+
+    location: { type: String },
+
     otp: { type: String},
+
+    friends: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+    profilePicture: { type: String }, // Path to profile picture
+    privacySettings: { type: String, enum: ['public', 'private'], default: 'public' },
     
     otpExpires: { type: Date }
 }, {
     timestamps: true,
 });
 
-module.exports = mongoose.model('User ', userSchema);
+const User = mongoose.model('User', userSchema); // This line registers the model
+module.exports = User;
