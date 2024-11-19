@@ -14,55 +14,55 @@ const generateOTP = () => {
 
 // Register User
 exports.register = async (req, res) => {
-  const { name, email, dateOfBirth, password, confirmPassword } = req.body;
+	const { name, email, dateOfBirth, password, confirmPassword } = req.body;
 
-  try {
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
-    }
+	try {
+		if (password !== confirmPassword) {
+			return res.status(400).json({ message: "Passwords do not match" });
+		}
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
-    }
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			return res.status(400).json({ message: "Invalid email format" });
+		}
 
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: "User  already exists" });
-    }
+		let user = await User.findOne({ email });
+		if (user) {
+			return res.status(400).json({ message: "User  already exists" });
+		}
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user = new User({
-      name,
-      email,
-      dateOfBirth,
-      password: hashedPassword,
-    });
-    await user.save();
-    res.status(201).json({ message: "Account Created successfully" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "An error occurred, please try again later." });
-  }
+		const hashedPassword = await bcrypt.hash(password, 10);
+		user = new User({
+			name,
+			email,
+			dateOfBirth,
+			password: hashedPassword,
+		});
+		await user.save();
+		res.status(201).json({ message: "Account Created successfully" });
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({ message: "An error occurred, please try again later." });
+	}
 };
 
 // Login User
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+	const { email, password } = req.body;
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res.status(200).json({ message:"Login successful", userId:user._id, token });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "An error occurred, please try again later." });
-  }
+	try {
+		const user = await User.findOne({ email });
+		if (!user || !(await bcrypt.compare(password, user.password))) {
+			return res.status(401).json({ message: "Invalid credentials" });
+		}
+		const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+			expiresIn: "1h",
+		});
+		res.status(200).json({ message: "Login successful", userId: user._id, token });
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({ message: "An error occurred, please try again later." });
+	}
 };
 
 // Request Password Reset
@@ -105,7 +105,7 @@ exports.verifyOtp = async (req, res) => {
 		}
 
 		// Check if OTP exists and hasn't expired
-    console.log(user.otp)
+		console.log(user.otp)
 		if (!user.otp || Date.now() > user.otpExpires) {
 			return res.status(400).json({ message: "OTP is expired or invalid" });
 		}
