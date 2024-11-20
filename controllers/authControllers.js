@@ -85,7 +85,7 @@ exports.forgotPassword = async (req, res) => {
 		// Send OTP via email
 		await sendEmail(email, "Password Reset OTP", `Your OTP is ${otp}`);
 
-		res.json({ message: "OTP sent to email" });
+		res.status(200).json({ message: "OTP sent to email" });
 	} catch (error) {
 		return res.status(500).json({ message: error.message });
 	}
@@ -145,7 +145,7 @@ exports.resetPassword = async (req, res) => {
 		user.otp = null; // Clear OTP after use
 		user.otpExpires = null; // Clear OTP expiration
 		await user.save();
-		res.json({ message: "Password reset successfully" });
+		res.status(200).json({ message: "Password reset successfully" });
 	} catch (error) {
 		return res.status(500).json({ message: error.message });
 	}

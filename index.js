@@ -5,6 +5,8 @@ const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
 const { authenticateSocket } = require('./middleware/authenticateUser');
+const swaggerUI = require('swagger-ui-express');
+const swaggerDocs = require('./docs/swaggerOptions');
 
 
 const upload = require("./config/multerUpload");
@@ -66,6 +68,10 @@ io.on('connection', (socket) => {
         console.log('User disconnected');
     });
 });
+
+// Swagger documentation
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
