@@ -34,4 +34,18 @@ const uploadProfilePhoto = multer({ storage: profilePictureStorage });
 
 const uploadPostMedia = multer({ storage: postMediaStorage });
 
-module.exports = {uploadProfilePhoto, uploadPostMedia}
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/profilePicture');
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    },
+});
+
+const upload = multer({ storage: storage });
+
+
+module.exports = {uploadProfilePhoto, uploadPostMedia, upload}

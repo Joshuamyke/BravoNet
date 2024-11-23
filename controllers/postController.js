@@ -1,74 +1,63 @@
-const Post = require('../models/post');
+const Post = require('../models/Post');
+const path = require('path');
 
 // Create a new post
 exports.createPost = async (req, res) => {
 	try {
+		const {id} = req.user
 		const { content } = req.body;
-		const media = req.file ? `/uploads/media/${req.file.filename}` : null;
+
+		const files = req.files || [];
+
+		files.forEach((file) => {
+			console.log(
+				`Fieldname: ${file.fieldname}, Originalname: ${file.originalname}`
+			);
+		});
+
+		let media = [];
+		if (req.files && req.files.length > 0) {
+			// Map through uploaded files to extract their paths
+			// media = req.files.map(file => `/uploads/media/${file.filename}`);
+
+			media = req.files.map(file => path.join(__dirname, '../uploads/media', file.filename));
+		}
+
+		// const media = files.find((file) => file.fieldname === "media") || null;
+
+		// const media = req.file ? `/uploads/media/${req.file.filename}` : null;
+
+
 		const mediaType = req.file ? req.file.mimetype.split('/')[0] : 'none';
 
 		const newPost = new Post({
-			userId: req.user._id,
+			userId: id,
 			content,
 			media,
 			mediaType,
 		});
 
+		// if (media) newPost.media = media.path;
+
+
+
 		await newPost.save();
 		res.status(201).json({ success: true, post: newPost });
 	} catch (error) {
-		res.status(500).json({ success: false, message: error.message });
+		res.status(500).json({message: error.message });
 	}
 };
 
-// Fetch the user's news feed
-exports.fetchNewsFeed = async (req, res) => {
+// Get Posts Feed
+exports.getPostsFeed = async (req, res) => {
 	try {
-		const posts = await Post.find({ userId: { $in: req.user.connections } })
-			.populate('userId', 'name profilePicture')
-			.sort({ createdAt: -1 }); // Sort by the latest posts first
-
-		res.status(200).json({ success: true, posts });
+	   const posts = await Post.find({ user: { $in: req.user.friends } }).populate('user', 'name');
+	   res.status(200).json(posts);
 	} catch (error) {
-		res.status(500).json({ success: false, message: error.message });
+	   res.status(500).json({ error: error.message });
 	}
-};
+ };
 
-// Like or unlike a post
-exports.likePost = async (req, res) => {
-	try {
-		const post = await Post.findById(req.params.postId);
-		if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
-
-		const isLiked = post.likes.includes(req.user._id);
-		if (isLiked) post.likes.pull(req.user._id);
-		else post.likes.push(req.user._id);
-
-		await post.save();
-		res.status(200).json({ success: true, likes: post.likes.length });
-	} catch (error) {
-		res.status(500).json({ success: false, message: error.message });
-	}
-};
-
-// Add a comment to a post
-exports.addComment = async (req, res) => {
-	try {
-		const { postId } = req.params;
-		const { text } = req.body;
-
-		const post = await Post.findById(postId);
-		if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
-
-		const newComment = { userId: req.user._id, text };
-		post.comments.push(newComment);
-		await post.save();
-
-		res.status(200).json({ success: true, comment: newComment });
-	} catch (error) {
-		res.status(500).json({ success: false, message: error.message });
-	}
-};
 
 // Share a post
 exports.sharePost = async (req, res) => {
@@ -87,3 +76,37 @@ exports.sharePost = async (req, res) => {
 		res.status(500).json({ success: false, message: error.message });
 	}
 };
+
+// Update Post
+exports.updatePost = async (req, res) => {
+	const { postId, content, media } = req.body;
+ 
+	try {
+	   const post = await Post.findById(postId);
+	   if (!post || post.user.toString() !== req.user.id) {
+		  return res.status(403).json({ message: 'Not authorized' });
+	   }
+	   post.content = content || post.content;
+	   post.media = media || post.media;
+	   await post.save();
+	   res.json(post);
+	} catch (error) {
+	   res.status(500).json({ error: error.message });
+	}
+ };
+ 
+ // Delete Post
+ exports.deletePost = async (req, res) => {
+	const { postId } = req.body;
+ 
+	try {
+	   const post = await Post.findById(postId);
+	   if (!post || post.user.toString() !== req.user.id) {
+		  return res.status(403).json({ message: 'Not authorized' });
+	   }
+	   await post.remove();
+	   res.json({ message: 'Post deleted' });
+	} catch (error) {
+	   res.status(500).json({ error: error.message });
+	}
+ };
