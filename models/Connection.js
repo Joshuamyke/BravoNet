@@ -1,16 +1,20 @@
 const mongoose = require('mongoose');
 
 const connectionSchema = new mongoose.Schema({
-   user:{
-      type: mongoose.Schema.Types.ObjectId, ref: 'User ', required: true
+   user: {
+      type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true
    },
    friend: { 
-      type: mongoose.Schema.Types.ObjectId, ref: 'User ', required: true 
-      
+      type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true 
    },
+   status: {
+      type: String,
+      enum: ['pending', 'accepted'],
+      default: 'pending'
+   }
 }, 
 { 
-   timestamps: 
-   true });
+   timestamps: true 
+});
 
 module.exports = mongoose.model('Connection', connectionSchema);
