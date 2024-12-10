@@ -97,22 +97,22 @@ exports.forgotPassword = async (req, res) => {
 };
 
 exports.verifyOtp = async (req, res) => {
-	const { otp, email } = req.body;
+	const { otp } = req.body;
 
-	if (!otp || !email) {
-		return res.status(400).json({ message: "OTP code and email are required" });
+	if (!otp) {
+		return res.status(400).json({ message: "OTP code is required" });
 	}
 
 	try {
-		const user = await User.findOne({ email });
+		// Find the user with the OTP (assuming OTP is unique)
+		const user = await User.findOne({ otp });
 		if (!user) {
-			return res.status(404).json({ message: "User not found" });
+			return res.status(404).json({ message: "User  not found or OTP is invalid" });
 		}
 
-		// Check if OTP exists and hasn't expired
-		console.log(user.otp);
-		if (!user.otp || Date.now() > user.otpExpires) {
-			return res.status(400).json({ message: "OTP is expired or invalid" });
+		// Check if OTP hasn't expired
+		if (Date.now() > user.otpExpires) {
+			return res.status(400).json({ message: "OTP is expired" });
 		}
 
 		// Compare the hashed OTP with the one entered by the user
@@ -121,11 +121,15 @@ exports.verifyOtp = async (req, res) => {
 			return res.status(400).json({ message: "Invalid OTP code" });
 		}
 
-		// Save the user object after clearing OTP
+		// Clear the OTP and expiration time after successful verification
+		user.otp = null; // Clear the OTP
+		user.otpExpires = null; // Clear the expiration time
+
+		// Save the user object
 		await user.save();
 
 		res.status(200).json({
-			message: "OTP verified successfully, proceed to reset password",
+			message: "OTP verified successfully",
 		});
 	} catch (error) {
 		console.error(error);

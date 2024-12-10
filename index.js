@@ -26,7 +26,7 @@ const fs = require("fs");
 const path = require("path");
 const server = http.createServer(app);
 const io = new Server(server, {
-	cors: { origin: "*" },
+  cors: { origin: "*" },
 });
 
 dotenv.config();
@@ -42,52 +42,48 @@ app.use("/api/auth", authRoutes);
 
 // Static folder for profile picture uploads
 app.get("/", (req, res) => {
-	res.send("WELCOME TO BRAVONET SOCIAL MEDIA APP");
+  res.send("WELCOME TO BRAVONET SOCIAL MEDIA APP");
 });
+
 app.use(
-	"/uploads/profile_pictures",
-	express.static(path.join(__dirname, "uploads/profile_pictures"))
+  "/uploads/profile_pictures",
+  express.static(path.join(__dirname, "uploads/profile_pictures"))
 );
+
 app.use("/api/profile", profileRoutes, uploadRoutes);
 app.use(`/api/posts`, postRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/likes", likeRoutes);
 app.use("/api/connections", connectionRoutes);
 
+io.use(authenticateSocket);
 
 //app.use('/api/admin', adminRoutes);
 
 // Socket.IO integration
 io.use(authenticateSocket); // Authenticate user sockets
 io.on("connection", (socket) => {
-	console.log("New User connected");
+  console.log("New User connected");
 
-	socket.on("disconnect", () => {
-		console.log("User disconnected");
-	});
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
 
-	io.on("connection", (socket) => {
-		console.log("New User connected");
+  socket.on("send-friend-request", (data) => {
+    socket.broadcast.emit("friend-request", data);
+  });
 
-		socket.on("send-friend-request", (data) => {
-			socket.broadcast.emit("friend-request", data);
-		});
-		socket.on("likePost", (data) => {
-			socket.broadcast.emit("postLiked", data);
-		});
+  socket.on("likePost", (data) => {
+    socket.broadcast.emit("postLiked", data);
+  });
 
-		socket.on("commentPost", (data) => {
-			socket.broadcast.emit("postCommented", data);
-		});
+  socket.on("commentPost", (data) => {
+    socket.broadcast.emit("postCommented", data);
+  });
 
-		socket.on("sharePost", (data) => {
-			socket.broadcast.emit("postShared", data);
-		});
-
-		socket.on("disconnect", () => {
-			console.log("User disconnected");
-		});
-	});
+  socket.on("sharePost", (data) => {
+    socket.broadcast.emit("postShared", data);
+  });
 });
 
 // Swagger documentation

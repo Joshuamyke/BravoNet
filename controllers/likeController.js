@@ -11,9 +11,9 @@ exports.likePost = async (req, res) => {
          return res.status(400).json({ message: 'Post already liked' });
       }
       const newLike = new Like({ user: req.user.id, post: postId });
-      await newLike.save();
-      await Post.findByIdAndUpdate(postId, { $push: { likes: newLike._id } });
-      res.status(201).json(newLike);
+      const savedLike = await newLike.save();
+      await Post.findByIdAndUpdate(postId, { $push: { likes: savedLike._id } });
+      res.status(201).json(savedLike);
    } catch (error) {
       res.status(500).json({ error: error.message });
    }
@@ -34,3 +34,27 @@ exports.unlikePost = async (req, res) => {
       res.status(500).json({ error: error.message });
    }
 };
+
+// Get all likes for a post
+exports.getPostLikes = async (req, res) => {
+   const { postId } = req.params;
+
+   try {
+      const likes = await Like.find({ post: postId }).populate('user');
+      res.json(likes);
+   } catch (error) {
+      res.status(500).json({ error: error.message });
+   }
+};
+
+// Get all likes for a user
+exports.getUserLikes = async (req, res) => {
+   const { userId } = req.params;
+
+   try {
+      const likes = await Like.find({ user: userId }).populate('post');
+      res.json(likes);
+   } catch (error) {
+      res.status(500).json({ error: error.message });
+   }
+}; 
