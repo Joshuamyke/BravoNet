@@ -11,6 +11,6 @@ router.post("/upload-profile-picture", authMiddleware, uploadProfilePhoto.single
 
 router.get("/view-profile/:id", authMiddleware, profileController.viewProfile);
 
-router.post("/add-friend/:friendId", authMiddleware, profileController.addFriend);
+//router.post("/add-friend/:friendId", authMiddleware, profileController.addFriend);
 
 module.exports = router;

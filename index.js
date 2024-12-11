@@ -6,7 +6,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { authenticateSocket } = require("./middleware/authenticateUser");
 const swaggerUI = require("swagger-ui-express");
-const swaggerDocs = require("./docs/swaggerOptions");
+
 
 const upload = require("./config/multerUpload");
 const cookieParser = require(`cookie-parser`);
@@ -16,7 +16,6 @@ const postRoutes = require("./routes/postRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 const likeRoutes = require("./routes/likeRoutes");
 const connectionRoutes = require("./routes/connectionRoutes");
-const uploadRoutes = require("./routes/uploadRoutes");
 
 //const { adminLogin, viewStatistics, manageUser, reviewReports, resolveReport } = require('../controllers/adminController');
 //const { authenticateAdmin } = require('./routes/adminRoutes')
@@ -50,7 +49,7 @@ app.use(
   express.static(path.join(__dirname, "uploads/profile_pictures"))
 );
 
-app.use("/api/profile", profileRoutes, uploadRoutes);
+app.use("/api/profile", profileRoutes);
 app.use(`/api/posts`, postRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/likes", likeRoutes);
@@ -86,8 +85,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// Swagger documentation
-app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocs));
+
 
 const PORT = process.env.PORT || 5000;
 
