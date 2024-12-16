@@ -1,9 +1,11 @@
 const User = require("../models/User");
 const path = require("path");
+const cloudinary = require("cloudinary").v2;
 
 // Update profile information
 exports.updateProfile = async (req, res) => {
   try {
+
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 

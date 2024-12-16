@@ -30,22 +30,23 @@ const postMediaStorage = new CloudinaryStorage({
     },
 });
 
+
+
 const uploadProfilePhoto = multer({ storage: profilePictureStorage });
 
 const uploadPostMedia = multer({ storage: postMediaStorage });
 
 
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, 'uploads/profilePicture');
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, `${Date.now()}-${file.originalname}`);
+//     },
+// });
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/profilePicture');
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    },
-});
-
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
 
 
-module.exports = {uploadProfilePhoto, uploadPostMedia, upload}
+module.exports = {uploadProfilePhoto, uploadPostMedia}
