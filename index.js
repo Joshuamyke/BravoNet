@@ -6,6 +6,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { authenticateSocket } = require("./middleware/authenticateUser");
 const swaggerUI = require("swagger-ui-express");
+const morgan = require('morgan'); 
 
 
 const upload = require("./config/multerUpload");
@@ -33,6 +34,7 @@ dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
+app.use(morgan('tiny'));
 app.use("/uploads/media", express.static("uploads/media"));
 
 connectDB();
