@@ -7,6 +7,10 @@ const { Server } = require("socket.io");
 const { authenticateSocket } = require("./middleware/authenticateUser");
 const swaggerUI = require("swagger-ui-express");
 
+// Error Handler
+const AppError = require('./utils/appError')
+const globalErrorHandler = require('./controllers/errorController')
+
 
 const upload = require("./config/multerUpload");
 const cookieParser = require(`cookie-parser`);
@@ -55,6 +59,15 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/likes", likeRoutes);
 app.use("/api/connections", connectionRoutes);
 
+// Catching error
+app.all('*', (req, res, next) => { 
+  const err = new AppError(`Can't find ${req.originalUrl} on this server`);
+  next(err)  
+});
+
+
+app.use(globalErrorHandler)
+
 io.use(authenticateSocket);
 
 //app.use('/api/admin', adminRoutes);
@@ -90,3 +103,4 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+
